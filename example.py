@@ -37,13 +37,23 @@ for generation in range(num_generations):
     # print(parents)
 
     # Generating next generation using crossover.
-    offspring_crossover = ga.crossover(parents,
-                                       offspring_size= parents.shape[0])
+    #==============================HP=============================
+    
+    # offspring_crossover = ga.crossover(parents,
+    #                                    offspring_size= parents.shape[0])
+    offspring_crossover = ga.cross_over_HP(parents)
+    
+    #==============================HP=============================
     # print("Crossover")
     # print(offspring_crossover)
 
     # Adding some variations to the offspring using mutation.
-    offspring_mutation = ga.mutation(offspring_crossover, mutation_rate)
+    #==============================HP=============================
+    
+    # offspring_mutation = ga.mutation(offspring_crossover, mutation_rate)
+    offspring_mutation = ga.mutation_HP(parents,mutation_rate)
+    
+    #==============================HP=============================
     # print("Mutation")
     # Creating the new population based on the parents and offspring.
     pop_and_child = np.concatenate((population,offspring_mutation))

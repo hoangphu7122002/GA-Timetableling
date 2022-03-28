@@ -3,6 +3,8 @@ import pandas as pd
 import random
 import datetime
 import time
+from cross_over_method import *
+from mutant_method import *
 
 # Get resource
 resource_path = "resource.csv"
@@ -231,6 +233,44 @@ def crossover(parents, offspring_size):
     #selected_offspring = select_mating_pool(offspring, offspring_size)
     return offspring
 
+#=============================HOANG PHU CODE==================================
+def cross_over_HP(parents):
+    offspring = []
+    for k in range(0,parents.shape[0],2):
+        # Index of the first parent to mate.
+        
+        parent1_idx = k % parents.shape[0]
+        # Index of the second parent to mate.
+        if k + 1 >= len(parents):
+            break
+
+        parent2_idx = (k + 1) % parents.shape[0]
+        parent1 = parents[parent1_idx]
+        parent2 = parents[parent2_idx]
+        rand_option = np.random.randint(0,2)
+        if rand_option == 0:
+            candidate1,candidate2 = multipoint_cross_over(parent1,parent2)
+        else:
+            candidate1,candidate2 = halfgen(parent1,parent2)
+        offspring.append(candidate1)
+        offspring.append(candidate2)
+    return np.array(offspring)
+    
+def mutation_HP(offspring_crossover, random_rate):
+
+    # Mutation changes a number of genes as defined by the num_mutations argument. The changes are random.
+    for offspring in offspring_crossover:
+        for task in offspring:
+            # print(task)
+            rate = random.uniform(0, 1)
+            if rate < random_rate:
+                rand_option = np.random.randint(0,8)
+                if rand_option in range(0,4): task = random_resetting(task)
+                elif rand_option == 5: task = swap_mutation(task)
+                elif rand_option == 6: task = inversion_mutation(task)
+                else:  task = scramble_mutation(task)          
+    return offspring_crossover
+#=============================HOANG PHU CODE==================================
 
 def mutation(offspring_crossover, random_rate):
     geneSet = ['0', '1']
@@ -238,6 +278,7 @@ def mutation(offspring_crossover, random_rate):
     # Mutation changes a number of genes as defined by the num_mutations argument. The changes are random.
     for offspring in offspring_crossover:
         for task in offspring:
+            # print(task)
             rate = random.uniform(0, 1)
             if rate < random_rate:
                 index = random.randrange(task.rfind('-') + 1, len(task))
