@@ -1,3 +1,4 @@
+from ctypes.wintypes import HDC
 import numpy as np
 import pandas as pd
 import random
@@ -14,6 +15,7 @@ resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdisciplin
 resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
 resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
 resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
+print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
 
 
@@ -27,6 +29,7 @@ def get_resource(team, date, site):  # return side resource
 data_path = "data.csv"
 data = pd.read_csv(data_path)
 
+
 data = data.dropna()
 data = data.drop('Unnamed: 0', axis=1)
 data = data[data.site != 'Not Defined']
@@ -34,6 +37,7 @@ data = data.loc[data['bdpocdiscipline'] == 'PROD']
 data = data.reset_index()
 data = data.drop('index', axis=1)
 dict_wonum = {x: y for x, y in zip(data.wonum, data.index)}
+
 
 
 # Generate random date
@@ -71,7 +75,6 @@ def _generate_parent():
 # Create population function
 def createParent(sol_per_pop):
     new_population = []
-    print(sol_per_pop)
     for i in range(sol_per_pop):
         new_invidual = _generate_parent()
         new_population.append(new_invidual)
@@ -113,7 +116,9 @@ def manday_chromosome(chromosome):  # fitness function
     HC_score = 0
     # SC_score = 0
     # violate_child = dict()
+
     for child in chromosome:
+        # print(chromosome)
         # take bit and convert to component
         component = child.split(
             '-')  # convert: H13807098-01/12/0001-09/03/0002-10110000110 to ['H13807098', '01/12/0001', '09/03/0002', '10110000110']
@@ -136,12 +141,12 @@ def manday_chromosome(chromosome):  # fitness function
             HC_score += 1
             continue
         if month == 2 and date > 28:
+            HC_score += 1
             continue
         if (month == 4 or month == 6 or month == 9 or month == 11) and date > 30:
             # SC_score += 1
             HC_score += 1
             continue
-
         date_begin = decode_datetime(bit_date)
         # access from dataframe
         est_dur = access_row_by_wonum(wonum)['r_estdur']
@@ -175,10 +180,9 @@ def manday_chromosome(chromosome):  # fitness function
         tup = (team, convert_datetime_to_string(dt_end), site)
         MANDAY[tup] = MANDAY.get(tup, 0) + 1
     # print violate_child
-
+    
     for key, value in MANDAY.items():
         team, date, site = key
-        print(value)
         data_resource_value = get_resource(team, date, site)
         if data_resource_value == -1:  # gen date with date not in resouce
             HC_score += 1
@@ -195,8 +199,8 @@ def cal_pop_fitness(pop):
     # The fitness function calulates the sum of products between each input and its corresponding weight.
     fitness = []
     for chromosome in pop:
-        HS =  manday_chromosome(chromosome)
-        fitness.append(1 / (10 * HS + 1))
+        HC =  manday_chromosome(chromosome)
+        fitness.append(1 / (10 * HC + 1))
     fitness = np.array(fitness)
 
     return fitness

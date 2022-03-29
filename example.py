@@ -21,8 +21,13 @@ num_generations = 100
 mutation_rate = 0.3
 for generation in range(num_generations):
     print("Generation : ", generation)
-    # Measuring the fitness of each chromosome in the population.
+    # Measuring the fitness of each chromosome in the population.'
+    
+    #================================================================
     fitness = ga.cal_pop_fitness(population)
+    # print(population)
+    # break
+    #================================================================
     print("Fitness")
     print(fitness)
 
