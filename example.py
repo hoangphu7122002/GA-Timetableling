@@ -10,8 +10,8 @@ Genetic algorithm parameters:
     Mating pool size
     Population size
 """
-sol_per_pop = 100
-num_parents_mating = 32
+sol_per_pop = 40
+num_parents_mating = 16
 # Creating the initial population.
 population = ga.createParent(sol_per_pop)
 pop_size = population.shape
@@ -79,7 +79,7 @@ for generation in range(num_generations):
     print(len(population))
     # new_population[0:parents.shape[0], :] = parents
     # new_population[parents.shape[0]:, :] = offspring_mutation
-
+    # break
 # Getting the best solution after iterating finishing all generations.
 # At first, the fitness is calculated for each solution in the final generation.
 fitness = ga.cal_pop_fitness(population)
@@ -103,11 +103,11 @@ matplotlib.pyplot.show()
 # Save result to out.csv
 import pandas as pd
 
-df = pd.DataFrame(best_result)
-df = df[0].str.split('-', expand=True)
-df.columns = ['wonum', 'targstartdate', 'targcompdate', 'schedstartdate']
-from pathlib import Path
+# df = pd.DataFrame(best_result)
+# df = df[0].str.split('-', expand=True)
+# df.columns = ['wonum', 'targstartdate', 'targcompdate', 'schedstartdate']
+# from pathlib import Path
 
-filepath = Path('out.csv')
-filepath.parent.mkdir(parents=True, exist_ok=True)
-df.to_csv(filepath)
+# filepath = Path('out.csv')
+# filepath.parent.mkdir(parents=True, exist_ok=True)
+# df.to_csv(filepath)

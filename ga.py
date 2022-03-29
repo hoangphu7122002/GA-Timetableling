@@ -178,13 +178,13 @@ def manday_chromosome(chromosome):  # fitness function
 
     for key, value in MANDAY.items():
         team, date, site = key
-
+        print(value)
         data_resource_value = get_resource(team, date, site)
         if data_resource_value == -1:  # gen date with date not in resouce
             HC_score += 1
         elif data_resource_value < value:
             HC_score += 1
-
+    
     return HC_score
     # ,SC_score
 
