@@ -48,7 +48,10 @@ def _str_time_prop(start, end, time_format, prop):
 
 def _random_date(start, end, prop):  # 0001 = current year, 0002 = next year
     sched_start = _str_time_prop(start, end, "%d/%m/%Y", prop)
-    date_sched_start = format(int(sched_start[:2]), '05b')
+    if (int(sched_start[:2]) != 0):
+        date_sched_start = format(int(sched_start[:2]), '05b')
+    else:
+        date_sched_start = format(1, '05b')
     month_sched_start = format(int(sched_start[3:5]), '04b')
     year_sched_start = format(int(sched_start[6:]), '02b')
     sched_start = ''.join([month_sched_start, date_sched_start, year_sched_start])
@@ -108,7 +111,7 @@ def convert_datetime_to_string(dt):
 def manday_chromosome(chromosome):  # fitness function
     MANDAY = dict()
     HC_score = 0
-
+    # SC_score = 0
     # violate_child = dict()
     for child in chromosome:
         # take bit and convert to component
@@ -125,15 +128,17 @@ def manday_chromosome(chromosome):  # fitness function
         month = int(date_begin[1])
         year = int(date_begin[2])
         if month > 12 or month < 1 or date > 31 or year > 2:
+            # SC_score += 1
             HC_score += 1
             continue
-        if (
-                month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12) and date > 31:
+        if (month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12) and date > 31:
+            # SC_score += 1
             HC_score += 1
             continue
         if month == 2 and date > 28:
             continue
         if (month == 4 or month == 6 or month == 9 or month == 11) and date > 30:
+            # SC_score += 1
             HC_score += 1
             continue
 
@@ -181,6 +186,7 @@ def manday_chromosome(chromosome):  # fitness function
             HC_score += 1
 
     return HC_score
+    # ,SC_score
 
 
 # fitness function for caculate score for every chromosome
@@ -189,7 +195,8 @@ def cal_pop_fitness(pop):
     # The fitness function calulates the sum of products between each input and its corresponding weight.
     fitness = []
     for chromosome in pop:
-        fitness.append(1 / (10 * manday_chromosome(chromosome) + 1))
+        HS =  manday_chromosome(chromosome)
+        fitness.append(1 / (10 * HS + 1))
     fitness = np.array(fitness)
 
     return fitness
@@ -213,6 +220,36 @@ def select_mating_pool(pop, num_parents_mating):
         current_member += 1
     return mating_pool
 
+def select_mating_pool_distinct(pop, num_parents_mating):
+    # Selecting the best individuals in the current generation as parents for producing the offspring of the next
+    # generation.
+    # first n-largest fitness
+    # fitness_index = fitness.argsort()[-num_parents:]
+    # tournament
+    mating_pool = np.copy(pop[-num_parents_mating:])
+    current_member = 1
+    rand_select = 3
+    visited = [False] * pop.shape[0]
+    while current_member <= num_parents_mating:
+        choose = True
+        while choose:
+            index = np.random.choice(pop.shape[0], rand_select, replace=False)
+            flag = True
+            for ele in index:
+                if visited[ele] == True:
+                    flag = False
+                    break
+            if flag == True:
+                for ele in visited:
+                    visited[ele] = True
+                choose = False
+                
+        random_individual = pop[index]
+        fitness = cal_pop_fitness(random_individual)
+        largest_fitness_index = fitness.argsort()[-1]
+        mating_pool[current_member - 1] = random_individual[largest_fitness_index]
+        current_member += 1
+    return mating_pool
 
 def crossover(parents, offspring_size):
     offspring = np.copy(parents[:parents.shape[0]//2])
@@ -247,11 +284,12 @@ def cross_over_HP(parents):
         parent2_idx = (k + 1) % parents.shape[0]
         parent1 = parents[parent1_idx]
         parent2 = parents[parent2_idx]
-        rand_option = np.random.randint(0,2)
-        if rand_option == 0:
-            candidate1,candidate2 = multipoint_cross_over(parent1,parent2)
-        else:
-            candidate1,candidate2 = halfgen(parent1,parent2)
+        # rand_option = np.random.randint(0,2)
+        # if rand_option == 0:
+        #     candidate1,candidate2 = multipoint_cross_over(parent1,parent2)
+        # else:
+        #     candidate1,candidate2 = halfgen(parent1,parent2)
+        candidate1,candidate2 = halfgen(parent1,parent2)
         offspring.append(candidate1)
         offspring.append(candidate2)
     return np.array(offspring)

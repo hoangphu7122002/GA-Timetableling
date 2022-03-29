@@ -10,8 +10,8 @@ Genetic algorithm parameters:
     Mating pool size
     Population size
 """
-sol_per_pop = 40
-num_parents_mating = 16
+sol_per_pop = 100
+num_parents_mating = 32
 # Creating the initial population.
 population = ga.createParent(sol_per_pop)
 pop_size = population.shape
@@ -51,7 +51,7 @@ for generation in range(num_generations):
     #==============================HP=============================
     
     # offspring_mutation = ga.mutation(offspring_crossover, mutation_rate)
-    offspring_mutation = ga.mutation_HP(parents,mutation_rate)
+    offspring_mutation = ga.mutation_HP(offspring_crossover,mutation_rate)
     
     #==============================HP=============================
     # print("Mutation")
@@ -61,6 +61,22 @@ for generation in range(num_generations):
     #get n-largest element from pop_and_child
     n_largest_index = pop_and_child_fitness.argsort()[-pop_size[0]:]
     population = pop_and_child[n_largest_index]
+    
+    #===========================DEBUG=======================
+    # test_array = []
+    # ele_0 = population[0]
+    # for i,ele in enumerate(population):
+    #     if i == 0:
+    #         continue
+    #     flag = False
+    #     for task1,task2 in zip(ele_0,ele):
+    #         if task1 != task2:
+    #             flag = True
+    #             break
+    #     test_array.append(flag)
+    # print(test_array)
+    #===========================DEBUG=======================
+    print(len(population))
     # new_population[0:parents.shape[0], :] = parents
     # new_population[parents.shape[0]:, :] = offspring_mutation
 
