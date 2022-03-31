@@ -10,11 +10,11 @@ from mutant_method import *
 # Get resource
 resource_path = "resource.csv"
 resource_data = pd.read_csv(resource_path)
-resource_data.columns = resource_data.columns.str.lower()
-resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
-resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
-resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
-resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
+# resource_data.columns = resource_data.columns.str.lower()
+# resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
+# resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
+# resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
+# resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
 # print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
 
@@ -112,7 +112,8 @@ def point_duration(duration):
 
 
 def convert_datetime_to_string(dt):
-    return dt.strftime("%d/%m/%Y")[:-1] + '000' + dt.strftime("%d/%m/%Y")[-1:]
+    # return dt.strftime("%d/%m/%Y")[:-1] + '000' + dt.strftime("%d/%m/%Y")[-1:]
+    return dt.strftime("%d/%m/%Y")[:-1] + dt.strftime("%d/%m/%Y")[-1:]
 
 # def compute_violate_child():
 

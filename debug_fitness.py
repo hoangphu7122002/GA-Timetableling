@@ -10,14 +10,14 @@ from ga import *
 
 resource_path = "resource.csv"
 resource_data = pd.read_csv(resource_path)
-resource_data.columns = resource_data.columns.str.lower()
-resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
-resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
-resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
+# resource_data.columns = resource_data.columns.str.lower()
+# resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
+# resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
+# resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
 resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
 # print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
-
+print(date_unique)
 
 def get_resource(team, date, site):  # return side resource
     if date not in date_unique:
@@ -59,21 +59,21 @@ def debug_partial(chromosome):  # fitness function
         date = int(date_begin[0])
         month = int(date_begin[1])
         year = int(date_begin[2])
-        if month > 12 or month < 1 or date > 31 or year > 2:
-            # SC_score += 1
-            HC_score += 1
-            continue
-        if (month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12) and date > 31:
-            # SC_score += 1
-            HC_score += 1
-            continue
-        if month == 2 and date > 28:
-            HC_score += 1
-            continue
-        if (month == 4 or month == 6 or month == 9 or month == 11) and date > 30:
-            # SC_score += 1
-            HC_score += 1
-            continue
+        # if month > 12 or month < 1 or date > 31 or year > 2:
+        #     # SC_score += 1
+        #     HC_score += 1
+        #     continue
+        # if (month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12) and date > 31:
+        #     # SC_score += 1
+        #     HC_score += 1
+        #     continue
+        # if month == 2 and date > 28:
+        #     HC_score += 1
+        #     continue
+        # if (month == 4 or month == 6 or month == 9 or month == 11) and date > 30:
+        #     # SC_score += 1
+        #     HC_score += 1
+        #     continue
         date_begin = decode_datetime(bit_date)
         # access from dataframe
         est_dur = access_row_by_wonum(wonum)['r_estdur']
@@ -86,16 +86,16 @@ def debug_partial(chromosome):  # fitness function
         std_begin = datetime.datetime.strptime(target_date_begin, '%d/%m/%Y')  # start target_day datetime
         etd_end = datetime.datetime.strptime(end_date_begin, '%d/%m/%Y')  # end target_day datetime
 
-        duration_start = (std_begin - dt_begin).days
-        duration_end = (dt_end - etd_end).days
+        # duration_start = (std_begin - dt_begin).days
+        # duration_end = (dt_end - etd_end).days
 
-        #compute violate point in every element
-        if point_duration(duration_start):
-            HC_score += 1
-            continue
-        if point_duration(duration_end):
-            HC_score += 1
-            continue
+        # #compute violate point in every element
+        # if point_duration(duration_start):
+        #     HC_score += 1
+        #     continue
+        # if point_duration(duration_end):
+        #     HC_score += 1
+        #     continue
         # violate_child[wonum] = point
 
         tup = (team, convert_datetime_to_string(dt_begin), site)
@@ -115,11 +115,12 @@ def debug_partial(chromosome):  # fitness function
     for key, value in MANDAY.items():
         team, date, site = key
         data_resource_value = get_resource(team, date, site)
-        if data_resource_value == -1:  # gen date with date not in resouce
-            HC_score += 1
-        elif data_resource_value < value:
-            HC_score += 1
-    
+        print(data_resource_value)
+        # if data_resource_value == -1:  # gen date with date not in resouce
+        #     HC_score += 1
+        # elif data_resource_value < value:
+        #     HC_score += 1
+        print(team,date,site,value)
     return HC_score
     # ,SC_score
     
@@ -133,20 +134,22 @@ def beautiful_print(chromosome):
 
 
 np.random.seed(0)
-# chromosome = ['H13831665-06/03/0002-31/03/0002-00110101110',
-#  'H13831669-06/03/0002-31/03/0002-00110101110',
-#  'H13831673-06/03/0002-31/03/0002-00110110110',
-#  'H13831677-06/03/0002-31/03/0002-00111010110',
-#  'H13831681-06/03/0002-31/03/0002-00111101110',
-#  'H13831685-06/03/0002-31/03/0002-00111101110',
-#  'H13831693-06/03/0002-31/03/0002-00110110110',
-#  'H13831697-06/03/0002-31/03/0002-00110100110',
-#  'H13831701-06/03/0002-31/03/0002-00110101010',
-#  'H13831709-06/03/0002-31/03/0002-00110100110',
-#  'H13831713-06/03/0002-31/03/0002-00111110010',
-#  'H13831717-06/03/0002-31/03/0002-00111011010']
-chromosome = createParent(1)[0]
-chromosome = beautiful_print(chromosome)
-for element in chromosome:
-    print(element)
+chromosome = ['H13831665-06/03/0002-31/03/0002-01111001110',
+ 'H13831669-06/03/0002-31/03/0002-11101001110',
+ 'H13831673-06/03/0002-31/03/0002-01001001110',
+ 'H13831677-06/03/0002-31/03/0002-01011001110',
+ 'H13831681-06/03/0002-31/03/0002-11000001110',
+ 'H13831685-06/03/0002-31/03/0002-10101001110',
+ 'H13831693-06/03/0002-31/03/0002-10001001110',
+ 'H13831697-06/03/0002-31/03/0002-01001001110',
+ 'H13831701-06/03/0002-31/03/0002-10110001110',
+ 'H13831709-06/03/0002-31/03/0002-01100001110',
+ 'H13831713-06/03/0002-31/03/0002-10100001110',
+ 'H13831717-06/03/0002-31/03/0002-10100001110']
+# chromosome = createParent(1)[0]
+# print(chromosome)
 
+print(manday_chromosome(chromosome))
+# chromosome = beautiful_print(chromosome)
+# for element in chromosome:
+#     print(element)
