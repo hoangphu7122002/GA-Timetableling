@@ -96,14 +96,17 @@ def access_row_by_wonum(wonum):
 
 
 def point_duration(duration):
-    point = 0
-    if duration > 2:  # target_start_date > 2 + start_date
-        point += 10000
-    elif duration > 1:
-        point += 500
-    elif duration > 0:
-        point += 100
-    return point
+    # point = 0
+    # if duration > 2:  # target_start_date > 2 + start_date
+    #     point += 10000
+    # elif duration > 1:
+    #     point += 500
+    # elif duration > 0:
+    #     point += 100
+    #return point
+    if duration > 0:
+        return 1
+    return 0
 
 
 def convert_datetime_to_string(dt):
@@ -159,12 +162,16 @@ def manday_chromosome(chromosome):  # fitness function
         std_begin = datetime.datetime.strptime(target_date_begin, '%d/%m/%Y')  # start target_day datetime
         etd_end = datetime.datetime.strptime(end_date_begin, '%d/%m/%Y')  # end target_day datetime
 
-        # duration_start = (std_begin - dt_begin).days
-        # duration_end = (dt_end - etd_end).days
+        duration_start = (std_begin - dt_begin).days
+        duration_end = (dt_end - etd_end).days
 
-        # compute violate point in every element
-        # point = point_duration(duration_start)
-        # point += point_duration(duration_end)
+        #compute violate point in every element
+        if point_duration(duration_start):
+            HC_score += 1
+            continue
+        if point_duration(duration_end):
+            HC_score += 1
+            continue
         # violate_child[wonum] = point
 
         tup = (team, convert_datetime_to_string(dt_begin), site)
