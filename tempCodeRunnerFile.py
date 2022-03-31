@@ -1,0 +1,1 @@
+print(resource_data)

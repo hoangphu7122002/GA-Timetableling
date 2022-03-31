@@ -15,7 +15,7 @@ resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdisciplin
 resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
 resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
 resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
-print(resource_data)
+# print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
 
 
@@ -52,13 +52,14 @@ def _str_time_prop(start, end, time_format, prop):
 
 def _random_date(start, end, prop):  # 0001 = current year, 0002 = next year
     sched_start = _str_time_prop(start, end, "%d/%m/%Y", prop)
+    print(sched_start)
     if (int(sched_start[:2]) != 0):
         date_sched_start = format(int(sched_start[:2]), '05b')
     else:
         date_sched_start = format(1, '05b')
     month_sched_start = format(int(sched_start[3:5]), '04b')
     year_sched_start = format(int(sched_start[6:]), '02b')
-    sched_start = ''.join([month_sched_start, date_sched_start, year_sched_start])
+    sched_start = ''.join([date_sched_start, month_sched_start, year_sched_start])
     return sched_start
 
 
@@ -66,6 +67,7 @@ def _generate_parent():
     genes = []
     df = data
     for wonum, tarsd, tared in zip(df.wonum, df.targstartdate, df.targcompdate):
+        print(tarsd,tared)
         rand_date = _random_date(tarsd, tared, random.random())
         chromosome = '-'.join([wonum, tarsd, tared, rand_date])
         genes.append(chromosome)
