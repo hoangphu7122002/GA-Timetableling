@@ -14,10 +14,10 @@ resource_data = pd.read_csv(resource_path)
 # resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
 # resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
 # resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
-resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
+resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'E&I']
 # print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
-print(date_unique)
+# print(date_unique)
 
 def get_resource(team, date, site):  # return side resource
     if date not in date_unique:
@@ -33,7 +33,7 @@ data = pd.read_csv(data_path)
 data = data.dropna()
 data = data.drop('Unnamed: 0', axis=1)
 data = data[data.site != 'Not Defined']
-data = data.loc[data['bdpocdiscipline'] == 'PROD']
+data = data.loc[data['bdpocdiscipline'] == 'E&I']
 data = data.reset_index()
 data = data.drop('index', axis=1)
 dict_wonum = {x: y for x, y in zip(data.wonum, data.index)}
@@ -97,7 +97,9 @@ def debug_partial(chromosome):  # fitness function
         #     HC_score += 1
         #     continue
         # violate_child[wonum] = point
-
+        print("\n==========\n")
+        print(est_dur)
+        print("\n==========\n")
         tup = (team, convert_datetime_to_string(dt_begin), site)
 
         MANDAY[tup] = MANDAY.get(tup, 0) + 1
@@ -108,8 +110,8 @@ def debug_partial(chromosome):  # fitness function
 
             MANDAY[tup_temp] = MANDAY.get(tup_temp, 0) + 1
 
-        tup = (team, convert_datetime_to_string(dt_end), site)
-        MANDAY[tup] = MANDAY.get(tup, 0) + 1
+        # tup = (team, convert_datetime_to_string(dt_end), site)
+        # MANDAY[tup] = MANDAY.get(tup, 0) + 1
     # print violate_child
     
     for key, value in MANDAY.items():
@@ -134,22 +136,22 @@ def beautiful_print(chromosome):
 
 
 np.random.seed(0)
-chromosome = ['H13831665-06/03/0002-31/03/0002-01111001110',
- 'H13831669-06/03/0002-31/03/0002-11101001110',
- 'H13831673-06/03/0002-31/03/0002-01001001110',
- 'H13831677-06/03/0002-31/03/0002-01011001110',
- 'H13831681-06/03/0002-31/03/0002-11000001110',
- 'H13831685-06/03/0002-31/03/0002-10101001110',
- 'H13831693-06/03/0002-31/03/0002-10001001110',
- 'H13831697-06/03/0002-31/03/0002-01001001110',
- 'H13831701-06/03/0002-31/03/0002-10110001110',
- 'H13831709-06/03/0002-31/03/0002-01100001110',
- 'H13831713-06/03/0002-31/03/0002-10100001110',
- 'H13831717-06/03/0002-31/03/0002-10100001110']
-# chromosome = createParent(1)[0]
-# print(chromosome)
+# chromosome = ['H13831665-06/03/0002-31/03/0002-01111001110',
+#  'H13831669-06/03/0002-31/03/0002-11101001110',
+#  'H13831673-06/03/0002-31/03/0002-01001001110',
+#  'H13831677-06/03/0002-31/03/0002-01011001110',
+#  'H13831681-06/03/0002-31/03/0002-11000001110',
+#  'H13831685-06/03/0002-31/03/0002-10101001110',
+#  'H13831693-06/03/0002-31/03/0002-10001001110',
+#  'H13831697-06/03/0002-31/03/0002-01001001110',
+#  'H13831701-06/03/0002-31/03/0002-10110001110',
+#  'H13831709-06/03/0002-31/03/0002-01100001110',
+#  'H13831713-06/03/0002-31/03/0002-10100001110',
+#  'H13831717-06/03/0002-31/03/0002-10100001110']
 
-print(manday_chromosome(chromosome))
+chromosome = createParent(1)[0]
+print(len(chromosome))
+# print(debug_partial(chromosome))
 # chromosome = beautiful_print(chromosome)
 # for element in chromosome:
 #     print(element)
