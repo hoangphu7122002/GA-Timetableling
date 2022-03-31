@@ -10,12 +10,12 @@ from mutant_method import *
 # Get resource
 resource_path = "resource.csv"
 resource_data = pd.read_csv(resource_path)
-resource_data.columns = resource_data.columns.str.lower()
-resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
-resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
-resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
-resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'PROD']
-print(resource_data)
+# resource_data.columns = resource_data.columns.str.lower()
+# resource_data = resource_data[['date', 'manday_ht', 'manday_mt', 'bdpocdiscipline']]
+# resource_data = resource_data.rename(columns={"manday_ht": "HT", "manday_mt": "MT"})
+# resource_data.date = resource_data.date.apply(lambda row: row[:-4] + "000" + row[-1])
+resource_data = resource_data.loc[resource_data['bdpocdiscipline'] == 'E&I']
+# print(resource_data)
 date_unique = np.unique(resource_data.date.to_list()).astype(list)
 
 
@@ -33,7 +33,7 @@ data = pd.read_csv(data_path)
 data = data.dropna()
 data = data.drop('Unnamed: 0', axis=1)
 data = data[data.site != 'Not Defined']
-data = data.loc[data['bdpocdiscipline'] == 'PROD']
+data = data.loc[data['bdpocdiscipline'] == 'E&I']
 data = data.reset_index()
 data = data.drop('index', axis=1)
 dict_wonum = {x: y for x, y in zip(data.wonum, data.index)}
@@ -52,13 +52,14 @@ def _str_time_prop(start, end, time_format, prop):
 
 def _random_date(start, end, prop):  # 0001 = current year, 0002 = next year
     sched_start = _str_time_prop(start, end, "%d/%m/%Y", prop)
+    # print(sched_start)
     if (int(sched_start[:2]) != 0):
         date_sched_start = format(int(sched_start[:2]), '05b')
     else:
         date_sched_start = format(1, '05b')
     month_sched_start = format(int(sched_start[3:5]), '04b')
     year_sched_start = format(int(sched_start[6:]), '02b')
-    sched_start = ''.join([month_sched_start, date_sched_start, year_sched_start])
+    sched_start = ''.join([date_sched_start, month_sched_start, year_sched_start])
     return sched_start
 
 
@@ -66,6 +67,7 @@ def _generate_parent():
     genes = []
     df = data
     for wonum, tarsd, tared in zip(df.wonum, df.targstartdate, df.targcompdate):
+        # print(tarsd,tared)
         rand_date = _random_date(tarsd, tared, random.random())
         chromosome = '-'.join([wonum, tarsd, tared, rand_date])
         genes.append(chromosome)
@@ -96,18 +98,22 @@ def access_row_by_wonum(wonum):
 
 
 def point_duration(duration):
-    point = 0
-    if duration > 2:  # target_start_date > 2 + start_date
-        point += 10000
-    elif duration > 1:
-        point += 500
-    elif duration > 0:
-        point += 100
-    return point
+    # point = 0
+    # if duration > 2:  # target_start_date > 2 + start_date
+    #     point += 10000
+    # elif duration > 1:
+    #     point += 500
+    # elif duration > 0:
+    #     point += 100
+    #return point
+    if duration > 0:
+        return 1
+    return 0
 
 
 def convert_datetime_to_string(dt):
-    return dt.strftime("%d/%m/%Y")[:-1] + '000' + dt.strftime("%d/%m/%Y")[-1:]
+    # return dt.strftime("%d/%m/%Y")[:-1] + '000' + dt.strftime("%d/%m/%Y")[-1:]
+    return dt.strftime("%d/%m/%Y")[:-1] + dt.strftime("%d/%m/%Y")[-1:]
 
 # def compute_violate_child():
 
@@ -159,12 +165,16 @@ def manday_chromosome(chromosome):  # fitness function
         std_begin = datetime.datetime.strptime(target_date_begin, '%d/%m/%Y')  # start target_day datetime
         etd_end = datetime.datetime.strptime(end_date_begin, '%d/%m/%Y')  # end target_day datetime
 
-        # duration_start = (std_begin - dt_begin).days
-        # duration_end = (dt_end - etd_end).days
+        duration_start = (std_begin - dt_begin).days
+        duration_end = (dt_end - etd_end).days
 
-        # compute violate point in every element
-        # point = point_duration(duration_start)
-        # point += point_duration(duration_end)
+        #compute violate point in every element
+        if point_duration(duration_start):
+            HC_score += 1
+            continue
+        if point_duration(duration_end):
+            HC_score += 1
+            continue
         # violate_child[wonum] = point
 
         tup = (team, convert_datetime_to_string(dt_begin), site)
@@ -176,9 +186,10 @@ def manday_chromosome(chromosome):  # fitness function
             tup_temp = (team, convert_datetime_to_string(run_date), site)
 
             MANDAY[tup_temp] = MANDAY.get(tup_temp, 0) + 1
-
-        tup = (team, convert_datetime_to_string(dt_end), site)
-        MANDAY[tup] = MANDAY.get(tup, 0) + 1
+        #=========================ERORR==========================
+        # tup = (team, convert_datetime_to_string(dt_end), site)
+        # MANDAY[tup] = MANDAY.get(tup, 0) + 1
+        #=========================ERORR==========================
     # print violate_child
     
     for key, value in MANDAY.items():
