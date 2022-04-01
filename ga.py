@@ -51,8 +51,8 @@ def _str_time_prop(start, end, time_format, prop):
 
 
 def _random_date(start, end, prop):  # 0001 = current year, 0002 = next year
+    # generate date in current data
     sched_start = _str_time_prop(start, end, "%d/%m/%Y", prop)
-    # print(sched_start)
     if (int(sched_start[:2]) != 0):
         date_sched_start = format(int(sched_start[:2]), '05b')
     else:
@@ -67,7 +67,6 @@ def _generate_parent():
     genes = []
     df = data
     for wonum, tarsd, tared in zip(df.wonum, df.targstartdate, df.targcompdate):
-        # print(tarsd,tared)
         rand_date = _random_date(tarsd, tared, random.random())
         chromosome = '-'.join([wonum, tarsd, tared, rand_date])
         genes.append(chromosome)
@@ -133,15 +132,19 @@ def manday_chromosome(chromosome):  # fitness function
         target_date_begin = component[1]
         end_date_begin = component[2]
         bit_date = component[3]
-
+        # print (target_date_begin)
+        # print (end_date_begin)
+        # print (bit_date)
         date_begin = decode_datetime(bit_date).split('/')
         date = int(date_begin[0])
         month = int(date_begin[1])
         year = int(date_begin[2])
-        if month > 12 or month < 1 or date > 31 or year > 2:
+        # penalty on month and year
+        if month > 12 or month < 1 or year > 2:
             # SC_score += 1
             HC_score += 1
             continue
+        # penalty on date
         if (month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12) and date > 31:
             # SC_score += 1
             HC_score += 1
@@ -153,6 +156,7 @@ def manday_chromosome(chromosome):  # fitness function
             # SC_score += 1
             HC_score += 1
             continue
+            
         date_begin = decode_datetime(bit_date)
         # access from dataframe
         est_dur = access_row_by_wonum(wonum)['r_estdur']
@@ -160,32 +164,36 @@ def manday_chromosome(chromosome):  # fitness function
         team = access_row_by_wonum(wonum)['bdpocdiscipline']
 
         # convert to datetime type
-        dt_begin = datetime.datetime.strptime(date_begin, '%d/%m/%Y')
-        dt_end = datetime.datetime.strptime(date_begin, '%d/%m/%Y') + datetime.timedelta(days=int(est_dur))
-        std_begin = datetime.datetime.strptime(target_date_begin, '%d/%m/%Y')  # start target_day datetime
-        etd_end = datetime.datetime.strptime(end_date_begin, '%d/%m/%Y')  # end target_day datetime
+        try :
+            dt_begin = datetime.datetime.strptime(date_begin, '%d/%m/%Y')
+            dt_end = datetime.datetime.strptime(date_begin, '%d/%m/%Y') + datetime.timedelta(days=int(est_dur))
+            std_begin = datetime.datetime.strptime(target_date_begin, '%d/%m/%Y')  # start target_day datetime
+            etd_end = datetime.datetime.strptime(end_date_begin, '%d/%m/%Y')  # end target_day datetime
 
-        duration_start = (std_begin - dt_begin).days
-        duration_end = (dt_end - etd_end).days
+            duration_start = (std_begin - dt_begin).days
+            duration_end = (dt_end - etd_end).days
 
-        #compute violate point in every element
-        if point_duration(duration_start):
-            HC_score += 1
-            continue
-        if point_duration(duration_end):
-            HC_score += 1
-            continue
-        # violate_child[wonum] = point
+            #compute violate point in every element
+            if point_duration(duration_start):
+                HC_score += 1
+                continue
+            if point_duration(duration_end):
+                HC_score += 1
+                continue
+            # violate_child[wonum] = point
 
-        tup = (team, convert_datetime_to_string(dt_begin), site)
+            tup = (team, convert_datetime_to_string(dt_begin), site)
 
-        MANDAY[tup] = MANDAY.get(tup, 0) + 1
-        # compute manday resource
-        for i in range(1, est_dur):
-            run_date = dt_begin + datetime.timedelta(days=i)
-            tup_temp = (team, convert_datetime_to_string(run_date), site)
+            MANDAY[tup] = MANDAY.get(tup, 0) + 1
+            # compute manday resource
+            for i in range(1, est_dur):
+                run_date = dt_begin + datetime.timedelta(days=i)
+                tup_temp = (team, convert_datetime_to_string(run_date), site)
 
-            MANDAY[tup_temp] = MANDAY.get(tup_temp, 0) + 1
+                MANDAY[tup_temp] = MANDAY.get(tup_temp, 0) + 1
+        except Exception:
+            # invalid days
+            HC_score += 3
         #=========================ERORR==========================
         # tup = (team, convert_datetime_to_string(dt_end), site)
         # MANDAY[tup] = MANDAY.get(tup, 0) + 1
@@ -218,21 +226,11 @@ def cal_pop_fitness(pop):
 
 
 def select_mating_pool(pop, num_parents_mating):
-    # Selecting the best individuals in the current generation as parents for producing the offspring of the next
-    # generation.
-    # first n-largest fitness
-    # fitness_index = fitness.argsort()[-num_parents:]
-    # tournament
-    mating_pool = np.copy(pop[-num_parents_mating:])
-    current_member = 1
-    rand_select = 3
-    while current_member <= num_parents_mating:
-        index = np.random.choice(pop.shape[0], rand_select, replace=False)
-        random_individual = pop[index]
-        fitness = cal_pop_fitness(random_individual)
-        largest_fitness_index = fitness.argsort()[-1]
-        mating_pool[current_member - 1] = random_individual[largest_fitness_index]
-        current_member += 1
+    # shuffling the pop then select top of pops
+    mating_pool = np.copy(pop)
+    np.random.shuffle(mating_pool)
+    mating_pool = mating_pool[0: num_parents_mating]
+    # print (mating_pool)
     return mating_pool
 
 def select_mating_pool_distinct(pop, num_parents_mating):
@@ -266,11 +264,21 @@ def select_mating_pool_distinct(pop, num_parents_mating):
         current_member += 1
     return mating_pool
 
+def cross_over_on_two_chromosome(parent1, parent2):
+    return
+
 def crossover(parents, offspring_size):
     offspring = np.copy(parents[:parents.shape[0]//2])
+    print ("off sprint : " + str(offspring))
     # The point at which crossover takes place between two parents. Usually, it is at the center.
     crossover_point = parents.shape[1] // 2
+    print ("parents : " + str(parents))
     # print(crossover_point)
+    # get random parents
+
+    # crossover on them
+
+
     for k in range(0,offspring_size,2):
         # Index of the first parent to mate.
         parent1_idx = k % parents.shape[0]
@@ -287,26 +295,19 @@ def crossover(parents, offspring_size):
 
 #=============================HOANG PHU CODE==================================
 def cross_over_HP(parents):
-    offspring = []
-    for k in range(0,parents.shape[0],2):
-        # Index of the first parent to mate.
-        
-        parent1_idx = k % parents.shape[0]
-        # Index of the second parent to mate.
-        if k + 1 >= len(parents):
-            break
-
-        parent2_idx = (k + 1) % parents.shape[0]
-        parent1 = parents[parent1_idx]
-        parent2 = parents[parent2_idx]
-        # rand_option = np.random.randint(0,2)
-        # if rand_option == 0:
-        #     candidate1,candidate2 = multipoint_cross_over(parent1,parent2)
-        # else:
-        #     candidate1,candidate2 = halfgen(parent1,parent2)
-        candidate1,candidate2 = halfgen(parent1,parent2)
-        offspring.append(candidate1)
-        offspring.append(candidate2)
+    # print ("off sprint : " + str(offspring))
+    # The point at which crossover takes place between two parents. Usually, it is at the center.
+    # print ("parents : " + str(parents))
+    # select random parents 
+    print ("Parents")
+    np.random.shuffle(parents)
+    parents_1 = parents[:int(parents.shape[0]/2), :]
+    parents_2 = parents[int(parents.shape[0]/2):, :]
+    print (parents_1.shape)
+    print (parents_2.shape)
+    vcrossover_parent_level = np.vectorize(crossover_parent_level)
+    offspring1, offspring2 = vcrossover_parent_level(parents_1, parents_2)
+    offspring = np.concatenate((offspring1,offspring2))
     return np.array(offspring)
     
 def mutation_HP(offspring_crossover, random_rate):

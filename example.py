@@ -10,8 +10,8 @@ Genetic algorithm parameters:
     Mating pool size
     Population size
 """
-sol_per_pop = 40
-num_parents_mating = 16
+sol_per_pop = 200
+num_parents_mating = 100
 # Creating the initial population.
 population = ga.createParent(sol_per_pop)
 pop_size = population.shape
@@ -38,6 +38,7 @@ for generation in range(num_generations):
     # Selecting the best parents in the population for mating.
     parents = ga.select_mating_pool(population,
                                     num_parents_mating)
+    
     # print("Parents")
     # print(parents)
 
@@ -62,9 +63,11 @@ for generation in range(num_generations):
     # print("Mutation")
     # Creating the new population based on the parents and offspring.
     pop_and_child = np.concatenate((population,offspring_mutation))
+    
     pop_and_child_fitness = ga.cal_pop_fitness(pop_and_child)
     #get n-largest element from pop_and_child
     n_largest_index = pop_and_child_fitness.argsort()[-pop_size[0]:]
+    
     population = pop_and_child[n_largest_index]
     
     #===========================DEBUG=======================
